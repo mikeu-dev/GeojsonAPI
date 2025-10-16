@@ -1,4 +1,4 @@
-﻿namespace GeojsonAPI.Models.Geojson
+﻿namespace GeojsonAPI.Models.GeoJSON
 {
     public class FeatureCollection
     {
