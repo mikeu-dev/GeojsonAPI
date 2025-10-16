@@ -1,42 +1,71 @@
-﻿using GeojsonAPI.Models.User;
+﻿using GeojsonAPI.DTO.Auth;
+using GeojsonAPI.DTO.Common;
 using GeojsonAPI.Service.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RegisterRequest = GeojsonAPI.Requests.Auth.RegisterRequest;
-using LoginRequest = GeojsonAPI.Requests.Auth.LoginRequest;
 
 namespace GeojsonAPI.Controllers.Auth
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController(AuthService authService) : ControllerBase
     {
-        private readonly AuthService _authService;
+        private readonly AuthService _authService = authService;
 
-        public AuthController(AuthService authService)
-        {
-            _authService = authService;
-        }
-
+        [AllowAnonymous]
         [HttpPost("register")]
-        public ActionResult<User> Register([FromBody] RegisterRequest req)
+        [ProducesResponseType(typeof(ApiResponse<UserResponseDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
+        public ActionResult<ApiResponse<UserResponseDto>> Register([FromBody] RegisterRequest req)
         {
             try
             {
                 var user = _authService.Register(req.Username, req.Email, req.Password);
-                return Ok(user);
+
+                var responseData = new UserResponseDto
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    Email = user.Email,
+                    Role = user.Role
+                };
+
+                return Ok(new ApiResponse<UserResponseDto>(
+                    true,
+                    "Registrasi berhasil",
+                    responseData
+                ));
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new ApiResponse<string>(
+                    false,
+                    ex.Message
+                ));
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
-        public ActionResult Login([FromBody] LoginRequest req)
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status401Unauthorized)]
+        public ActionResult<ApiResponse<object>> Login([FromBody] LoginRequest req)
         {
             if (_authService.Login(req.Username, req.Password))
-                return Ok("Login berhasil");
-            return Unauthorized("Username atau password salah");
+            {
+                var token = Guid.NewGuid().ToString(); // nanti bisa diganti JWT
+
+                return Ok(new ApiResponse<object>(
+                    true,
+                    "Login berhasil",
+                    new { Token = token }
+                ));
+            }
+
+            return Unauthorized(new ApiResponse<string>(
+                false,
+                "Username atau password salah"
+            ));
         }
     }
 }
