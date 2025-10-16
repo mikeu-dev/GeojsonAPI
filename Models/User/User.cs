@@ -7,7 +7,7 @@ namespace GeojsonAPI.Models.User
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public required string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         [BsonElement("username")]
         public required string Username { get; set; }
