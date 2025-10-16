@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-namespace GeojsonAPI.Models.Geojson
+namespace GeojsonAPI.Models.GeoJSON
 {
     public class Feature
     {
