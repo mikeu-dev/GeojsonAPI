@@ -1,6 +1,6 @@
 # GeojsonAPI
 
-GeojsonAPI is a .NET 8 Web API for handling and serving GeoJSON data. It provides endpoints to manage geographic features, collections, and geometries in compliance with the GeoJSON specification.
+GeojsonAPI is a ASP .NET Core Web API for handling and serving GeoJSON data. It provides endpoints to manage geographic features, collections, and geometries in compliance with the GeoJSON specification.
 
 ## Features
 
