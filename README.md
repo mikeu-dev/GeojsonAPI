@@ -1,51 +1,57 @@
 # GeoJSONAPI
 
-GeojsonAPI is a ASP .NET Core Web API for handling and serving GeoJSON data. It provides endpoints to manage geographic features, collections, and geometries in compliance with the GeoJSON specification.
+GeoJSONAPI is an ASP .NET Core Web API designed for handling and serving GeoJSON data. It provides endpoints to manage geographic features, collections, and geometries, fully compliant with the GeoJSON specification.
 
 ## Features
 
-- Parse and serialize GeoJSON objects (Feature, FeatureCollection, Geometry)
-- CRUD operations for GeoJSON features
-- Extensible model structure for geographic data
-- Built with modern .NET 8 practices
+* Parse and serialize GeoJSON objects (Feature, FeatureCollection, Geometry)
+* CRUD operations for GeoJSON features
+* Extensible model structure for geographic data
+* Built using modern .NET 8 practices
 
 ## Authentication (JWT)
 
-GeojsonAPI menggunakan **JWT (JSON Web Token)** untuk mengamankan endpoint tertentu.  
-Alur penggunaannya:
+GeoJSONAPI uses **JWT (JSON Web Token)** to secure specific endpoints. The workflow is as follows:
 
-1. **Register**: Daftar pengguna baru
-	```http
-	POST /api/Auth/register
-	```
-2. **Login**: Untuk mendapatkan token
-	```http
-	POST /api/Auth/login
-	```
-	**Response**
-	```json
-	{
-		"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-	}
-	```
-3. **Mengakses endpoint terproteksi**: Sertakan token di header Authorization
-	```text
-	Authorization: Bearer <token>
-	```
-	**Contoh menggunakan curl**:
-	```curl
-	curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
-     https://localhost:5182/api/GeoJSON
-	```
+1. **Register**: Create a new user
+
+   ```http
+   POST /api/Auth/register
+   ```
+2. **Login**: Obtain an access token
+
+   ```http
+   POST /api/Auth/login
+   ```
+
+   **Response**
+
+   ```json
+   {
+   	"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+   }
+   ```
+3. **Access protected endpoints**: Include the token in the Authorization header
+
+   ```text
+   Authorization: Bearer <token>
+   ```
+
+   **Example using curl**:
+
+   ```curl
+   curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+    https://localhost:5182/api/GeoJSON
+   ```
 
 ## Usage
 
-You can interact with the API using tools like [Postman](https://www.postman.com/) or `curl`. Example endpoints:
+You can interact with the API using tools such as [Postman](https://www.postman.com/) or `curl`. Example endpoints include:
 
-- `POST /api/Auth/register` - Register
-- `POST /api/Auth/login` - Login
-- `POST /api/GeoJSON/upload` - Upload GeoJSON File
-- `GET /api/GeoJSON` - Get GeoJSON
+* `POST /api/Auth/register` - Register a new user
+* `POST /api/Auth/login` - User login
+* `POST /api/GeoJSON/upload` - Upload a GeoJSON file
+* `GET /api/GeoJSON` - Retrieve GeoJSON data
 
 ## Contributing
 
