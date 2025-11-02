@@ -10,23 +10,50 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<Settings>(
-    builder.Configuration.GetSection("Settings"));
-// Add services to the container.
+// Cek environment dan key
+Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var keyString = jwtSettings["Key"];
+if (string.IsNullOrWhiteSpace(keyString))
+    throw new Exception("JWT Key di konfigurasi kosong atau null!");
+Console.WriteLine($"JWT Key Length (chars): {keyString.Length}");
+Console.WriteLine($"JWT Key Length (bytes): {Encoding.UTF8.GetBytes(keyString).Length}");
+
+// Konfigurasi services
+builder.Services.Configure<Settings>(builder.Configuration.GetSection("Settings"));
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<GeoJSONService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<GeoJSONRepository>();
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "GeojsonAPI", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Masukkan JWT token tanpa kata 'Bearer '",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+    c.OperationFilter<AuthorizeCheckOperationFilter>();
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-#pragma warning disable CS8604 // Possible null reference argument.
-var key = Encoding.ASCII.GetBytes(s: jwtSettings["Key"]);
-#pragma warning restore CS8604 // Possible null reference argument.
-
+// JWT Authentication
+var key = Encoding.UTF8.GetBytes(keyString);
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -46,46 +73,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-    {
-        Title = "GeojsonAPI",
-        Version = "v1"
-    });
-
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Masukkan JWT token tanpa kata 'Bearer '",
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT"
-    });
-
-    c.OperationFilter<AuthorizeCheckOperationFilter>();
-
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
-
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -95,7 +84,5 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
