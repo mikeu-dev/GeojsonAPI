@@ -1,17 +1,25 @@
 ﻿using GeojsonAPI.DTO.Auth;
 using GeojsonAPI.DTO.Common;
-using GeojsonAPI.Service.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using GeojsonAPI.Service.Auth;
 
 namespace GeojsonAPI.Controllers.Auth
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController(AuthService authService) : ControllerBase
+    public class AuthController : ControllerBase
     {
-        private readonly AuthService _authService = authService;
+        private readonly AuthService _authService;
 
+        public AuthController(AuthService authService)
+        {
+            _authService = authService;
+        }
+
+        // ==========================
+        // 🔹 REGISTER
+        // ==========================
         [AllowAnonymous]
         [HttpPost("register")]
         [ProducesResponseType(typeof(ApiResponse<UserResponseDto>), StatusCodes.Status200OK)]
@@ -45,6 +53,9 @@ namespace GeojsonAPI.Controllers.Auth
             }
         }
 
+        // ==========================
+        // 🔹 LOGIN
+        // ==========================
         [AllowAnonymous]
         [HttpPost("login")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
@@ -53,7 +64,7 @@ namespace GeojsonAPI.Controllers.Auth
         {
             if (_authService.Login(req.Username, req.Password))
             {
-                var token = Guid.NewGuid().ToString(); // nanti bisa diganti JWT
+                var token = _authService.GenerateJwtToken(req.Username);
 
                 return Ok(new ApiResponse<object>(
                     true,
